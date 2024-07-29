@@ -1,0 +1,48 @@
+# This workflow will install Python dependencies, run tests and lint with a variety of Python versions
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
+
+name: Python package
+
+on:  
+  push:
+    branches:
+      - master
+
+jobs:
+  release:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install Poetry
+      run: |
+        cd libs/partners/neospace/
+        curl -sSL https://install.python-poetry.org | python3 -
+        echo "::add-path::$HOME/.local/bin"
+  
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.12' # You can specify the required Python version here
+
+    - name: Install dependencies
+      run: |
+        poetry install
+
+    - name: Build Package
+      run: |
+          poetry build
+      
+    - name: Generate Random Tag
+      id: random_tag
+      run: echo "tag=v1.0.0-$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 8)" >> $GITHUB_OUTPUT
+
+    - name: Create Release
+      uses: ncipollo/release-action@v1.14.0
+      with:
+        artifacts: "dist/*"
+        artifactContentType: "application/zip"
+        name: "Release main ${{ steps.random_tag.outputs.tag }}"
+        prerelease: "true"
+        tag: ${{ steps.random_tag.outputs.tag }}
