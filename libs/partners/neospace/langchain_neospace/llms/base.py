@@ -19,7 +19,7 @@ from typing import (
     Union,
 )
 
-from langchain_neospace.helpers import validate_extra_body
+from langchain_neospace.helpers import extra_body
 import neospace
 import tiktoken
 from langchain_core.callbacks import (
@@ -146,14 +146,23 @@ class BaseNeoSpace(BaseLLM):
     extra_body: Optional[Mapping[str, Any]] = None
     """Additional JSON properties to include in the request parameters when
     making requests to NeoSpace compatible APIs, such as vLLM.
-
-    Session_id is required in extra_body, if not specified, ValueError is raised.
-    {
-        "session_id": "your_session_id", # required
-        "customer_id" "your_customer_id", # recommended for tracking
-        "channel_id": "your_channel_id", # recommended for tracking 
-        **your_additional_properties
-    }
+    # Validation is done in the `extra_body` function.
+    # Function: extra_body
+    # Comment: Validate the extra_body parameter, used for tracking in the Mercury.
+    Note:
+        - The 'session_id' field is required and cannot be empty.
+        - The 'customer_id' field is optional. If not provided, it will be set to an empty string.
+        - The 'channel_id' field is optional. If not provided, it will be set to "LANGCHAIN_NEOSPACE".
+        - You can include any additional fields you want to track in the 'extra_body' parameter.
+    Example:
+        >>> dict = {
+        ...     "session_id": "generated_session_id",
+        ...     "customer_id": "your_customer_identifier",
+        ...     "channel_id": "your_channel_identifier",
+        ...     **additional_fields,
+        ... }
+        >>> extra_body(dict)
+        {'session_id': 'generated_session_id', 'customer_id': 'your_customer_identifier', 'channel_id': 'your_channel_identifier', ..., **additional_fields}
     """
 
     class Config:
@@ -243,7 +252,7 @@ class BaseNeoSpace(BaseLLM):
             normal_params["max_tokens"] = self.max_tokens
 
         if self.extra_body is not None:
-            normal_params["extra_body"] = validate_extra_body(self.extra_body)
+            normal_params["extra_body"] = extra_body(self.extra_body)
         else:
             raise ValueError("extra_body parameter needs to be set.")
 

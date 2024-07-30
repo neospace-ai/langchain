@@ -31,13 +31,18 @@ from typing import (
 )
 from urllib.parse import urlparse
 
-from langchain_neospace.helpers import validate_extra_body
+from langchain_neospace.helpers import extra_body
 import neospace
 import tiktoken
 from langchain_core.callbacks import (
     AsyncCallbackManagerForLLMRun,
     CallbackManagerForLLMRun,
 )
+from langchain_core.runnables.utils import (
+    Input,
+    Output
+)
+
 from langchain_core.language_models import LanguageModelInput
 from langchain_core.language_models.chat_models import (
     BaseChatModel,
@@ -299,7 +304,7 @@ class _AllReturnType(TypedDict):
 class BaseChatNeoSpace(BaseChatModel):
     client: Any = Field(default=None, exclude=True)  #: :meta private:
     async_client: Any = Field(default=None, exclude=True)  #: :meta private:
-    model_name: str = Field(default="neo-3.5-turbo", alias="model")
+    model_name: str = Field(default="better_KD_loss_03_lora_full", alias="model")
     """Model name to use."""
     temperature: float = 0.7
     """What sampling temperature to use."""
@@ -369,14 +374,23 @@ class BaseChatNeoSpace(BaseChatModel):
     extra_body: Optional[Mapping[str, Any]] = None
     """Additional JSON properties to include in the request parameters when
     making requests to NeoSpace compatible APIs, such as vLLM.
-
-    Session_id is required in extra_body, if not specified, ValueError is raised.
-    {
-        "session_id": "your_session_id", # required
-        "customer_id" "your_customer_id", # recommended for tracking
-        "channel_id": "your_channel_id", # recommended for tracking 
-        **your_additional_properties
-    }
+    # Validation is done in the `extra_body` function.
+    # Function: extra_body
+    # Comment: Validate the extra_body parameter, used for tracking in the Mercury.
+    Note:
+        - The 'session_id' field is required and cannot be empty.
+        - The 'customer_id' field is optional. If not provided, it will be set to an empty string.
+        - The 'channel_id' field is optional. If not provided, it will be set to "LANGCHAIN_NEOSPACE".
+        - You can include any additional fields you want to track in the 'extra_body' parameter.
+    Example:
+        >>> dict = {
+        ...     "session_id": "generated_session_id",
+        ...     "customer_id": "your_customer_identifier",
+        ...     "channel_id": "your_channel_identifier",
+        ...     **additional_fields,
+        ... }
+        >>> extra_body(dict)
+        {'session_id': 'generated_session_id', 'customer_id': 'your_customer_identifier', 'channel_id': 'your_channel_identifier', ..., **additional_fields}
     """
     include_response_headers: bool = False
     """Whether to include response headers in the output message response_metadata."""
@@ -481,7 +495,7 @@ class BaseChatNeoSpace(BaseChatModel):
             "logit_bias": self.logit_bias,
             "stop": self.stop or None,  # also exclude empty list for this
             "max_tokens": self.max_tokens,
-            "extra_body": validate_extra_body(self.extra_body),
+            "extra_body": extra_body(self.extra_body),
         }
 
         params = {
@@ -894,6 +908,65 @@ class BaseChatNeoSpace(BaseChatModel):
         num_tokens += 3
         return num_tokens
 
+    def bind(self, **kwargs: Any) -> Runnable[Input, Output]:
+        """
+        Bind arguments to a Runnable, returning a new Runnable.
+
+        Useful when a Runnable in a chain requires an argument that is not
+        in the output of the previous Runnable or included in the user input.
+
+        Args:
+            kwargs: The arguments to bind to the Runnable.
+                - extra_body: Additional JSON properties to include in the request (validated by extra_body function).
+                    # Function: extra_body
+                    # Comment: Validate the extra_body parameter, used for tracking in the Mercury.
+                    Note:
+                        - The 'session_id' field is required and cannot be empty.
+                        - The 'customer_id' field is optional. If not provided, it will be set to an empty string.
+                        - The 'channel_id' field is optional. If not provided, it will be set to "LANGCHAIN_NEOSPACE".
+                        - You can include any additional fields you want to track in the 'extra_body' parameter.
+                    
+
+        Returns:
+            A new Runnable with the arguments bound.
+
+        Example:
+
+        .. code-block:: python
+
+            from langchain_community.chat_models import ChatOllama
+            from langchain_core.output_parsers import StrOutputParser
+
+            llm = ChatOllama(model='llama2')
+
+            # Without bind.
+            chain = (
+                llm
+                | StrOutputParser()
+            )
+
+            chain.invoke("Repeat quoted words exactly: 'One two three four five.'")
+            # Output is 'One two three four five.'
+
+            # With bind.
+            chain = (
+                llm.bind(stop=["three"])
+                | StrOutputParser()
+            )
+
+            chain.invoke("Repeat quoted words exactly: 'One two three four five.'")
+            # Output is 'One two'
+
+        """
+
+        metadata = kwargs["extra_body"]
+        if metadata is not None:
+            kwargs["extra_body"] = extra_body(metadata)
+        else:
+            raise ValueError("extra_body parameter needs to be set.")
+
+        return super().bind(**kwargs)
+
     def bind_functions(
         self,
         functions: Sequence[Union[Dict[str, Any], Type[BaseModel], Callable, BaseTool]],
@@ -1098,7 +1171,7 @@ class BaseChatNeoSpace(BaseChatModel):
                     justification: str
 
 
-                llm = ChatNeoSpace(model="neo-3.5-turbo-0125", temperature=0)
+                llm = ChatNeoSpace(model="better_KD_loss_03_lora_full", temperature=0, extra_body={"session_id": "your_session_id"})
                 structured_llm = llm.with_structured_output(AnswerWithJustification)
 
                 structured_llm.invoke(
@@ -1124,7 +1197,7 @@ class BaseChatNeoSpace(BaseChatModel):
                     justification: str
 
 
-                llm = ChatNeoSpace(model="neo-3.5-turbo-0125", temperature=0)
+                llm = ChatNeoSpace(model="better_KD_loss_03_lora_full", temperature=0, extra_body={"session_id": "your_session_id"})
                 structured_llm = llm.with_structured_output(
                     AnswerWithJustification, include_raw=True
                 )
@@ -1154,7 +1227,7 @@ class BaseChatNeoSpace(BaseChatModel):
 
 
                 dict_schema = convert_to_openai_tool(AnswerWithJustification)
-                llm = ChatNeoSpace(model="neo-3.5-turbo-0125", temperature=0)
+                llm = ChatNeoSpace(model="better_KD_loss_03_lora_full", temperature=0, extra_body={"session_id": "your_session_id"})
                 structured_llm = llm.with_structured_output(dict_schema)
 
                 structured_llm.invoke(
@@ -1175,7 +1248,7 @@ class BaseChatNeoSpace(BaseChatModel):
                     answer: str
                     justification: str
 
-                llm = ChatNeoSpace(model="neo-3.5-turbo-0125", temperature=0)
+                llm = ChatNeoSpace(model="better_KD_loss_03_lora_full", temperature=0, extra_body={"session_id": "your_session_id"})
                 structured_llm = llm.with_structured_output(
                     AnswerWithJustification,
                     method="json_mode",
@@ -1308,11 +1381,12 @@ class ChatNeoSpace(BaseChatNeoSpace):
             from langchain_neospace import ChatNeoSpace
 
             llm = ChatNeoSpace(
-                model="neo-4o",
+                model="better_KD_loss_03_lora_full",
                 temperature=0,
                 max_tokens=None,
                 timeout=None,
                 max_retries=2,
+                extra_body={"session_id": "your_session_id"},
                 # api_key="...",
                 # base_url="...",
                 # organization="...",
@@ -1614,7 +1688,7 @@ class ChatNeoSpace(BaseChatNeoSpace):
 
         .. code-block:: python
 
-            llm = ChatNeoSpace(model="neo-4o", stream_usage=True)
+            llm = ChatNeoSpace(model="better_KD_loss_03_lora_full", stream_usage=True, extra_body={"session_id": "your_session_id"})
             structured_llm = llm.with_structured_output(...)
 
     Logprobs:
