@@ -345,19 +345,19 @@ class MakeASandwich(BaseModel):
 )
 def test_bind_tools_tool_choice(tool_choice: Any) -> None:
     """Test passing in manually construct tool call message."""
-    llm = ChatNeoSpace(model="neo-3.5-turbo-0125", temperature=0)
+    llm = ChatNeoSpace(model="better_KD_loss_03_lora_full", temperature=0)
     llm.bind_tools(tools=[GenerateUsername, MakeASandwich], tool_choice=tool_choice)
 
 
 @pytest.mark.parametrize("schema", [GenerateUsername, GenerateUsername.schema()])
 def test_with_structured_output(schema: Union[Type[BaseModel], dict]) -> None:
     """Test passing in manually construct tool call message."""
-    llm = ChatNeoSpace(model="neo-3.5-turbo-0125", temperature=0)
+    llm = ChatNeoSpace(model="better_KD_loss_03_lora_full", temperature=0)
     llm.with_structured_output(schema)
 
 
 def test_get_num_tokens_from_messages() -> None:
-    llm = ChatNeoSpace(model="neo-4o")
+    llm = ChatNeoSpace(model="better_KD_loss_03_lora_full")
     messages = [
         SystemMessage("you're a good assistant"),
         HumanMessage("how are you"),
