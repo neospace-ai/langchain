@@ -15,26 +15,33 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    - name: Install Poetry
-      run: |
-        cd libs/partners/neospace/
-        curl -sSL https://install.python-poetry.org | python3 -
-        echo "$HOME/.local/bin" >> $GITHUB_PATH
   
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
         python-version: '3.12' # You can specify the required Python version here
+        
+    - name: Install Poetry
+      run: |
+        curl -sSL https://install.python-poetry.org | python3 -
+        echo "$HOME/.local/bin" >> $GITHUB_PATH
+        cd libs/partners/neospace/
+
+    - name: Configure Poetry
+      run: |
+        cd libs/partners/neospace/
+        poetry config virtualenvs.in-project true
 
     - name: Install dependencies
       run: |
-        poetry shell
+        cd libs/partners/neospace/
         poetry install
-        
 
     - name: Build Package
       run: |
-          poetry build
+        cd libs/partners/neospace/
+        source .venv/bin/activate
+        poetry build
       
     - name: Generate Random Tag
       id: random_tag
