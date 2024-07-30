@@ -19,7 +19,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
-        python-version: '3.12' # You can specify the required Python version here
+        python-version: '3.8.1' # You can specify the required Python version here
         
     - name: Install Poetry
       run: |
@@ -50,7 +50,7 @@ jobs:
     - name: Create Release
       uses: ncipollo/release-action@v1.14.0
       with:
-        artifacts: "dist/*"
+        artifacts: "libs/partners/neospace/dist/*"
         artifactContentType: "application/zip"
         name: "Release main ${{ steps.random_tag.outputs.tag }}"
         prerelease: "true"
