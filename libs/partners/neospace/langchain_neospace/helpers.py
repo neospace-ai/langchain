@@ -68,7 +68,7 @@ def extra_body(extra_body: Mapping[str, Any]) -> Mapping[str, Any]:
     extra_body["channel_id"] = extra_body["channel_id"] if extra_body["channel_id"] != "" else "LANGCHAIN_NEOSPACE"
 
     if len(validation_errs) > 0:
-        raise ValueError(f"Extra body validation errors \n\t{"\n\t".join(validation_errs)}")
+        raise ValueError(f"extra_body validation errors \n\t{"\n\t".join(validation_errs)}")
 
 
     return extra_body
