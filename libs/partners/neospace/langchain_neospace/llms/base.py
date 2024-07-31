@@ -148,7 +148,7 @@ class BaseNeoSpace(BaseLLM):
     making requests to NeoSpace compatible APIs, such as vLLM.
     # Validation is done in the `extra_body` function.
     # Function: extra_body
-    # Comment: Validate the extra_body parameter, used for tracking in the Mercury.
+    # Comment: Validate the extra_body parameter, used for tracking in AI Ops.
     Note:
         - The 'session_id' field is required and cannot be empty.
         - The 'customer_id' field is optional. If not provided, it will be set to an empty string.

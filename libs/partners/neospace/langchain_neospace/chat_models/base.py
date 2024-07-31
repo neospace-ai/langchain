@@ -376,7 +376,7 @@ class BaseChatNeoSpace(BaseChatModel):
     making requests to NeoSpace compatible APIs, such as vLLM.
     # Validation is done in the `extra_body` function.
     # Function: extra_body
-    # Comment: Validate the extra_body parameter, used for tracking in the Mercury.
+    # Comment: Validate the extra_body parameter, used for tracking in AI Ops.
     Note:
         - The 'session_id' field is required and cannot be empty.
         - The 'customer_id' field is optional. If not provided, it will be set to an empty string.
@@ -919,7 +919,7 @@ class BaseChatNeoSpace(BaseChatModel):
             kwargs: The arguments to bind to the Runnable.
                 - extra_body: Additional JSON properties to include in the request (validated by extra_body function).
                     # Function: extra_body
-                    # Comment: Validate the extra_body parameter, used for tracking in the Mercury.
+                    # Comment: Validate the extra_body parameter, used for tracking in AI Ops.
                     Note:
                         - The 'session_id' field is required and cannot be empty.
                         - The 'customer_id' field is optional. If not provided, it will be set to an empty string.
@@ -1018,7 +1018,7 @@ class BaseChatNeoSpace(BaseChatModel):
                     f"provided function was {formatted_functions[0]['name']}."
                 )
             kwargs = {**kwargs, "function_call": function_call}
-        return super().bind(functions=formatted_functions, **kwargs)
+        return self.bind(functions=formatted_functions, **kwargs)
 
     def bind_tools(
         self,
@@ -1087,7 +1087,7 @@ class BaseChatNeoSpace(BaseChatModel):
                     f"Received: {tool_choice}"
                 )
             kwargs["tool_choice"] = tool_choice
-        return super().bind(tools=formatted_tools, **kwargs)
+        return self.bind(tools=formatted_tools, **kwargs)
 
     # TODO: Fix typing.
     @overload  # type: ignore[override]

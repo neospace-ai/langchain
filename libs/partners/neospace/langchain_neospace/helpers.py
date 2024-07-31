@@ -12,7 +12,7 @@ def deep_strip(data):
 
 def extra_body(extra_body: Mapping[str, Any]) -> Mapping[str, Any]:
     """
-    Validate the extra_body parameter, used for tracking in the Mercury.
+    Validate the extra_body parameter, used for tracking in AI Ops.
 
     This function validates the `extra_body` parameter to ensure that it contains the required fields and that they are nor empty, invalid.
 
