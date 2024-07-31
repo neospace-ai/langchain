@@ -959,9 +959,9 @@ class BaseChatNeoSpace(BaseChatModel):
 
         """
 
-        metadata = kwargs["extra_body"]
-        if metadata is not None:
-            kwargs["extra_body"] = extra_body(metadata)
+        extra_b = kwargs.get("extra_body", None)
+        if extra_b is not None:
+            kwargs["extra_body"] = extra_body(extra_b)
         else:
             raise ValueError("extra_body parameter needs to be set.")
 
