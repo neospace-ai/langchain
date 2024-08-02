@@ -1,6 +1,16 @@
 from typing import Any, Mapping
 
-def deep_strip(data):
+
+def deep_strip(data: Any) -> Any:
+    """
+    Recursively removes leading and trailing whitespace from strings in a nested data structure.
+
+    Args:
+        data (str, list, dict): The data structure to be processed.
+
+    Returns:
+        str, list, dict: The processed data structure with leading and trailing whitespace removed from strings.
+    """
     if isinstance(data, str):
         return data.strip()
     elif isinstance(data, list):
@@ -71,4 +81,4 @@ def extra_body(extra_body: Mapping[str, Any]) -> Mapping[str, Any]:
         raise ValueError(f"extra_body validation errors \n\t{"\n\t".join(validation_errs)}")
 
 
-    return extra_body
+    return { "metadata": extra_body }
