@@ -67,7 +67,7 @@ def extra_body(extra_body: Mapping[str, Any]) -> Mapping[str, Any]:
     elif extra_body.get("session_id", "") == "":
         validation_errs += ["session_id is empty"]
     
-    extra_body["channel_id"] = extra_body["channel_id"] if extra_body["channel_id"] != "" else "LANGCHAIN_NEOSPACE"
+    extra_body["channel_id"] = extra_body["channel_id"] if extra_body.get("channel_id", "") != "" else "LANGCHAIN_NEOSPACE"
 
     if len(validation_errs) > 0:
         raise ValueError(f"extra_body validation errors \n\t{"\n\t".join(validation_errs)}")
